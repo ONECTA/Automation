@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Autosys>
+	<Job>
+		<StartTime>15:35</StartTime>
+		<EndTime>15:40</EndTime>
+		<JobInstance>link2-jobstatus.htm</JobInstance>
+		<JobName>link2</JobName>
+		<EmailAddress>ashukush@in.ibm.com</EmailAddress>
+		<GreenFlag>SUCCESS,TERMINATED</GreenFlag>
+	</Job>
+	<Job>
+		<StartTime>12:20</StartTime>
+		<EndTime>12:30</EndTime>
+		<JobInstance>P00</JobInstance>
+		<JobName>cro_%_b_scs_checkingtalisman</JobName>
+		<EmailAddress>kent.george@barclays.com</EmailAddress>
+		<GreenFlag>SUCCESS,TERMINATED,INACTIVE</GreenFlag>
+	</Job>
+</Autosys>

@@ -1,0 +1,27 @@
+---------  FETCHIING Autosys Reports --------
+
+ ***********JOB NUMBER :1**************
+StartTime : 15:35
+EndTime : 15:40
+EmailAddress : ashukush@in.ibm.com
+GreenFlag : SUCCESS,TERMINATED
+15:38
+validateTime:true
+SUCCESS -> SUCCESS,TERMINATED=true
+SUCCESS -> SUCCESS,TERMINATED=true
+SUCCESS -> SUCCESS,TERMINATED=true
+SUCCESS -> SUCCESS,TERMINATED=true
+SUCCESS -> SUCCESS,TERMINATED=true
+SUCCESS -> SUCCESS,TERMINATED=true
+INACTIVE -> SUCCESS,TERMINATED=false
+Check Status:false
+Red
+java.lang.ProcessImpl@103dbd3
+
+ ***********JOB NUMBER :2**************
+StartTime : 12:20
+EndTime : 12:30
+EmailAddress : kent.george@barclays.com
+GreenFlag : SUCCESS,TERMINATED,INACTIVE
+15:38
+validateTime:false
