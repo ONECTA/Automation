@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Autosys>
 	<Job>
-		<StartTime>15:35</StartTime>
-		<EndTime>15:40</EndTime>
-		<JobInstance>link2-jobstatus.htm</JobInstance>
-		<JobName>link2</JobName>
+		<StartTime>18:21</StartTime>
+		<EndTime>18:60</EndTime>
+		<JobInstance>P00</JobInstance>
+		<JobName>cro_%_b_scs_checkingtalisman</JobName>
 		<EmailAddress>ashukush@in.ibm.com</EmailAddress>
-		<GreenFlag>SUCCESS,TERMINATED</GreenFlag>
+		<GreenFlag>SUCCESS,TERMINATED,INACTIVE</GreenFlag>
 	</Job>
 	<Job>
 		<StartTime>12:20</StartTime>

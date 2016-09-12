@@ -19,7 +19,7 @@ echo oExcel.ActiveWorkbook.Close(0)>>Executor
 echo oExcel.Quit >>Executor
 ren Executor Executor.vbs
 echo RUNNING   EXECUTOR  [ %TIME% ]>> %_my_Log%
-cscript "Executor.vbs" %CD%\"ScriptTest_summary.xlsm" "Putty2" >> %_my_Log%
+cscript "Executor.vbs" %CD%\"Test.xlsm" "Greet" >> %_my_Log%
 echo FINISHED  EXECUTOR  [ %TIME% ] >> %_my_Log%
 del /f Executor.vbs
 exit
