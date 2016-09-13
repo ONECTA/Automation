@@ -1,0 +1,196 @@
+<html>
+<head>
+<script>
+/*  
+Set up instructions deactivating the ActiveX PopUp
+--------------------------------------------------
+Follow the steps mentioned below to disable the ActiveX prompts.
+1.      Click on Internet explorer icon to open Internet explorer.
+2.      Click on Tools and then select Internet Options form the list.
+3.      Click on the Security tab and click on Custom Level button.
+4.      This opens a "Security Settings" window with a list of actions that could compromise yourcomputer's security. For each one, you can tell Explorer to automatically block the action in all instances ("Disable"), allow it in all instances ("Enable") or ask you whether to block it ("Prompt").
+5.      Scroll down to the section marked "ActiveX Controls and Plug-ins.
+Select  "Enable" for the following actions:
+a. "Allow previously unused ActiveX controls to run without prompt"
+b. "Download signed ActiveX controls"
+c. "Download unsigned ActiveX controls"
+d. "Initialize and script ActiveX controls not marked as safe for scripting"
+e. "Run ActiveX controls and plug-ins"
+f. "Script ActiveX controls marked safefor scripting."
+
+Select  "Disable" for the action "Automatic prompting for ActiveX controls."
+
+Direct Call from Automate.jar
+-----------------------
+OpenIE in minimized window
+--------------------------
+Read Parameter from Para 
+
+*/
+   
+function fetchParams(){
+
+var loc = window.location.pathname;
+var dir = loc.substring(1, loc.lastIndexOf('/'));
+var Paramfile = dir + "/Params.txt";
+console.log("Paramfile:" + Paramfile);
+var name = readFile(Paramfile).split("#");
+return name[0] + "%20status%20" + name[1];
+}
+function readFile(filename){
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    var ForReading = 1;
+    var f1 = fso.OpenTextFile(filename, ForReading);
+    var text = f1.ReadAll();
+    f1.close();
+    return text;
+}
+function readTextFile(file)
+{   var fileDisplayArea = document.getElementById('fileDisplayArea');
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                var allText = rawFile.responseText;
+                fileDisplayArea.innerText = "Recieved the Job Name and Instance as:" + allText; 
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+
+    function SaveXML(UserData) 
+    {   
+	    var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+		var fso = new ActiveXObject("Scripting.FileSystemObject");
+		var loc = window.location.pathname;
+var dir = loc.substring(1, loc.lastIndexOf('/'));
+var Respfile = dir + "/Response.xml";
+console.log("Respfile:" + Respfile);
+		var FILENAME = Respfile;
+        var file = fso.CreateTextFile(FILENAME, true);
+        file.WriteLine('<?xml version="1.0" encoding="utf-8"?>\n');
+        file.WriteLine('<JobStatus>\n');
+
+        for (countr = 0; countr < UserData.length; countr++) {
+            file.Write('    <Status>');
+            file.Write(UserData[countr]);
+            file.WriteLine('</Status>\n');
+        } // end for countr
+
+        file.WriteLine('</JobStatus>\n');
+        file.Close();
+console.log("DataSaved to " + FILENAME);
+    } // end SaveXML function --------------------
+
+    function LoadXML(xmlFile) 
+    {
+        xmlDoc.load(xmlFile);
+        return xmlDoc.documentElement;
+    } //end function LoadXML()
+
+    function initialize_array() 
+    {
+        var person = new Array();
+        var noFile = true;
+        var xmlObj;
+        if (fso.FileExists(FILENAME)) 
+        {
+            xmlObj = LoadXML(FILENAME);
+            noFile = false;
+            } // if
+        else 
+        {
+            xmlObj = LoadXML("PersonXML.xml");
+            //alert("local" + xmlObj);
+            } // end if
+
+        var usrCount = 0;
+        while (usrCount < xmlObj.childNodes.length) 
+        {
+            var tmpUsrs = new Array(xmlObj.childNodes(usrCount).getAttribute("Usrname"),
+                                    xmlObj.childNodes(usrCount).getAttribute("Pswd"),
+                        xmlObj.childNodes(usrCount).getAttribute("PersonID"),
+                                    xmlObj.childNodes(usrCount).getAttribute("FirstName"),
+                                    xmlObj.childNodes(usrCount).getAttribute("LastName"),
+                                    xmlObj.childNodes(usrCount).getAttribute("Gender"),
+                                    xmlObj.childNodes(usrCount).getAttribute("DOB"),
+                                    xmlObj.childNodes(usrCount).getAttribute("Title"));
+            person.push(tmpUsrs);
+            usrCount++;
+             }   //end while
+        if (noFile == false)
+            fso.DeleteFile(FILENAME);
+        SaveXML(person);
+    }
+
+	// end function initialize_array()  
+	
+	function loadDoc() {
+	var params = fetchParams();
+	var URLs = "http://my.barcapint.com/ATS/cgi-bin/view.pl?job_name=" + document.getElementById("JN").value + "&view_type=status&instance=" + document.getElementById("JI").value;
+	console.log(URLs);
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("sCookie").innerHTML = "WLSG-BarCapINT=" + getCookie(WLSG-BarCapINT) + "; " + getCookie(LLPRODID) + "; " + getCookie(axsidprod) + "; " + getCookie(BCLPRODINTRANETIC);
+	 // extractStatus(this.responseText);
+	 
+    }
+  };
+  xhttp.open("GET",URLs , true);
+  xhttp.send();
+}
+
+function extractStatus(resp){
+var Status = [];
+var tableContent = resp.split("<TABLE");
+            var xml = "<TABLE" + tableContent[5].split("</TABLE>")[0] + "</TABLE>";
+            var bgcolor = xml.split("bgColor");
+            for( i = 1;i < bgcolor.length;i++) {
+                Status.push(bgcolor[i].substring(9).split(" ")[0]);
+                }
+				console.log(Status);
+				document.getElementById("sCookie").innerHTML ="Data fetched:<br>" + Status;
+SaveXML(Status);
+				}
+				
+		//setTimeout(function(){ loadDoc(); }, 5000);		
+		
+	function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    document.getElementById("demo").innerHTML = "Listing All cookies:<br>" + ca;
+	for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+           return c.substring(name.length, c.length);
+			//document.getElementById("fileDisplayArea").innerHTML = c.substring(name.length, c.length);
+		}
+    }
+   return "";
+}
+		
+	</script>
+	
+	
+	
+	</head>
+<body>
+<h2>Create Command</h2>
+<input type="text" id="JN" >
+<input type="text" id="JI" >
+<textarea  id="sCookie"></textarea>
+<div id="demo"></div>
+<span id="fileDisplayArea"></span>
+<button type="button" onclick="loadDoc()">GetCommand</button>
+</body>
+</html>
