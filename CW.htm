@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wisp - Just Connect</title>
+  <script src='https://code.jquery.com/jquery-2.1.3.min.js'></script>
+  <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="css/demo.css" />
+		<link rel="stylesheet" type="text/css" href="css/ns-default.css" />
+		<link rel="stylesheet" type="text/css" href="css/ns-style-bar.css" />
+			<script src="modernizr.custom.js"></script>
+<script src="//www.parsecdn.com/js/parse-1.3.4.min.js"></script>
+			
+				<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+</head>
+				<button id="notification-trigger" class="progress-button">
+						<span class="content">Message</span>
+						<span class='LoggedUser'></span>
+						<span class="progress"></span>
+				</button>
+				<script src="classie.js"></script>
+					<script src="notificationFx.js"></script>
+				<script>
+		var Globalmsg = "There are no notification as of ";
+			(function() {
+				var bttn = document.getElementById( 'notification-trigger' );
+
+				// make sure..
+				bttn.disabled = false;
+
+				bttn.addEventListener( 'click', function() {
+					// simulate loading (for demo purposes only)
+					classie.add( bttn, 'active' );
+					setTimeout( function() {
+
+					//	classie.remove( bttn, 'active' );
+						
+						// create the notification
+						var notification = new NotificationFx({
+							message : '<span class="icon icon-megaphone"></span><p>' +  Globalmsg + '</p>',
+							layout : 'bar',
+							effect : 'slidetop',
+							type : 'notice', // notice, warning or error
+							onClose : function() {
+								bttn.disabled = false;
+							}
+						});
+
+						// show the notification
+						notification.show();
+
+					}, 100 );
+					
+					// disable the button (for demo purposes only)
+					//this.disabled = true;
+				} );
+			})();
+			
+			function showNotification(msg){
+			Globalmsg = msg;
+			document.getElementById( 'notification-trigger' ).click();
+			}
+		</script>	<script src="http://requirejs.org/docs/release/2.1.11/minified/require.js"></script>
+<body>
+<script>
+var points = 0;
+var clickBtn = 0;
+var wordArr = "";
+var resultArr = "";
+var showRes = "";
+var selstring = "";
+var otherParty = "";
+var finalWords = [];
+//$(".log").html('<img src="loading_gears.gif"></img>');
+$(document).ready(function(){
+$(".log").hide();
+Parse.initialize("4d0a1IjqRR9JA8ZpuSJFso7Mu7PlmwUgem40rHrq", "93K6gnpAnzX2res2KzMzoVK3PIIZE8LKLDQSSyhq");
+
+$(".showImg").slideUp();
+var me = document.getElementById('iName').value;
+$('.result').click(function(){
+console.log('***********New thread started*************');
+otherParty = $('.result').text();
+console.log('Other Party :' + otherParty);
+$('.searchResult').html('');
+startThread(me,otherParty);
+});
+//window.setInterval(function() {
+//  var elem = document.getElementById('chatScroll');
+ // elem.scrollTop = elem.scrollHeight;
+//}, 5000);
+
+// Cookie time :-)
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString();
+    document.cookie = cname+"="+cvalue+"; "+expires;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1);
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+
+
+function checkCookie() {
+    var user=getCookie("iName");
+	var mob =getCookie("iMobile");
+ if (user != "") {
+        console.log(user + ' has logged in.');
+		document.getElementById('iName').value = user;
+		document.getElementById('iMobile').value = mob;
+		//$('.content').html(document.getElementById('iName').value );
+	getProfilePic("InviteUser","iUser",document.getElementById('iName').value);
+		//$('.content').html(getProfilePic("InviteUser","iUser",document.getElementById('iName').value));
+		showNotification(document.getElementById('iName').value + ' has logged in');
+		getInboundUser(document.getElementById('iName').value.trim().toLowerCase());
+		
+    } else {
+       user = prompt("Please enter your name:","");
+	   var GameScore = Parse.Object.extend("InviteUser");
+	   var query = new Parse.Query(GameScore);
+		query.equalTo("iUser", user.toLowerCase());
+		query.find({
+					success: function(gameScore) {
+					// The object was retrieved successfully.
+					console.log("UserExits:" + user + " Count: " + gameScore.length);
+					if(gameScore.length > 0){
+					alert('User with name: ' + user + ' already exists!!');
+					checkCookie();
+					}
+					else{
+					mob  = prompt("Please enter your Mobile:","");
+				   if (user != "" && user != null) {
+					   setCookie("iName", user.toLowerCase(), 30);
+					   setCookie("iMobile", mob.trim(), 30);
+					   document.getElementById('iName').value = user.toLowerCase();
+					   document.getElementById('iMobile').value =  mob.trim();
+					   logIn();
+					
+						}
+					}
+					
+				},
+			  error: function(object, error) {
+				// The object was not retrieved successfully.
+				// Internet Connection Error . Please Check ur network.
+				alert(' Internet Connection Error . Please Check ur network.');
+				}
+			});
+	   }
+}
+
+$('.UploadPic').click(function(){
+$('#profilePicFileUpload').click();
+});
+$("#profilePicFileUpload").change(function(){
+   uploadProfilePic();
+});
+
+
+function uploadProfilePic(){
+$('.showImg').slideDown();
+$('.showImg').html('<img src="loading_gears.gif"></img>');
+    var user=getCookie("iName");
+	var mob =getCookie("iMobile");
+var fileUploadControl = $("#profilePicFileUpload")[0];
+if (fileUploadControl.files.length > 0) {
+  var file = fileUploadControl.files[0];
+  
+  var name = $("#profilePicFileUpload").val().split('/').pop().split('\\').pop();
+  console.log(name + '  Uploading File for user:' + user  + "mob" + mob );
+  var parseFile = new Parse.File(name, file);
+  parseFile.save().then(function() {
+		// The file has been saved to Parse.
+		$('.showImg').html('File uploaded Sucessfully');
+		$('.showImg').slideUp();
+		UpdateRecord("InviteUser","iUser",user,"iPhoto",parseFile);
+		alert('File uploaded Sucessfully');
+		
+	}, function(error) {
+	 alert('File upload error !!');
+		// The file either could not be read, or could not be saved to Parse.
+	});
+}
+else{
+console.log('Upload Action Cancelled');
+}
+}
+
+function getProfilePic(className,Key,KeyValue){
+var GameScore = Parse.Object.extend(className);
+var query = new Parse.Query(GameScore);
+query.equalTo(Key, KeyValue.toLowerCase());
+query.first({
+success: function(object) {
+	//$('.content').html(getProfileURL(object) + document.getElementById('iName').value + ' <=> ' + otherParty); getProfileURL(object);
+	console.log('Setting Profile Pic');
+	$('.content').html(KeyValue);
+	},
+  error: function(error) {
+    alert("Error: " + error.code + " " + error.message);
+  }
+});
+}
+
+
+
+
+function UpdateRecord(className,Key,KeyValue,UpdatedCol,data)
+{
+console.log(className + "," + Key + "," + KeyValue+ "," + UpdatedCol + "," + data);
+var GameScore = Parse.Object.extend(className);
+var query = new Parse.Query(GameScore);
+query.equalTo(Key, KeyValue.toLowerCase());
+query.first({
+success: function(object) {
+	object.set(UpdatedCol, data);
+	object.save();
+	console.log("Added to " + UpdatedCol  + " against " + Key + ":" + KeyValue.toLowerCase() );
+	},
+  error: function(error) {
+    alert("Error: " + error.code + " " + error.message);
+  }
+});
+
+}
+var userArr = [];
+
+$('.material-icons').click(function(){
+$('#profilePhotoFileUpload').click();
+});
+checkCookie() ;
+$("#profilePhotoFileUpload").change(function(){
+   upload();
+});
+
+
+
+function upload(){
+$('.showImg').slideDown();
+$('.showImg').html('<img src="loading_gears.gif"></img>');
+var user=getCookie("iName");
+	var mob =getCookie("iMobile");
+var fileUploadControl = $("#profilePhotoFileUpload")[0];
+if (fileUploadControl.files.length > 0) {
+  var file = fileUploadControl.files[0];
+  
+  var name = $("#profilePhotoFileUpload").val().split('/').pop().split('\\').pop();
+  console.log(name + '  Uploading File for user:' + user  + "mob" + mob );
+  var parseFile = new Parse.File(name, file);
+  parseFile.save().then(function() {
+		// The file has been saved to Parse.
+		$('.showImg').html('File uploaded Sucessfully');
+		$('.showImg').slideUp();
+		alert('File uploaded Sucessfully');
+		var Invited = Parse.Object.extend("Invite");
+		var Invite = new Invited();
+		Invite.set("iName", user.toLowerCase());
+		Invite.set("iMobile", parseInt(mob));
+		Invite.set("iComment", $('.chatType').val() + " Media");
+		Invite.set("iDiscuss" , user.toLowerCase() + ":" + otherParty.toLowerCase());
+		Invite.set("iFile" , parseFile);
+		Invite.save(null, {
+		  success: function(gameScore) {
+			// Execute any logic that should take place after the object is saved.
+		   console.log('Comment Posted: ' + gameScore.get('iComment'));
+		   startThread(document.getElementById('iName').value,otherParty);
+		   $('.chatType').val('');
+		  },
+		  error: function(gameScore, error) {
+			// Execute any logic that should take place if the save fails.
+			// error is a Parse.Error with an error code and message.
+			alert('Failed to create new object, with error code: ' + error.message);
+		  }
+		});
+		
+	}, function(error) {
+	 alert('File upload error !!');
+		// The file either could not be read, or could not be saved to Parse.
+	});
+}
+else{
+console.log('Upload Action Cancelled');
+}
+}
+
+showLast();
+});
+function setProfilePicsinChat(className,Key,KeyValue,imgObj){
+var GameScore = Parse.Object.extend(className);
+var query = new Parse.Query(GameScore);
+query.equalTo(Key, KeyValue.toLowerCase());
+query.first({
+success: function(object) {
+	//$('.content').html(getProfileURL(object) + document.getElementById('iName').value + ' <=> ' + otherParty); getProfileURL(object);
+	console.log('Setting Profile Pic');
+	$('.' + imgObj).attr("src",getPicURL(object));
+	},
+  error: function(error) {
+    alert("Error: " + error.code + " " + error.message);
+  }
+});
+}
+function createImgCont(clsName){
+return "<img class='" + clsName  + "' src=''></img>";
+}
+
+
+function getProfilePic(className,Key,KeyValue){
+var GameScore = Parse.Object.extend(className);
+var query = new Parse.Query(GameScore);
+query.equalTo(Key, KeyValue.toLowerCase());
+query.first({
+success: function(object) {
+	//$('.content').html(getProfileURL(object) + document.getElementById('iName').value + ' <=> ' + otherParty); getProfileURL(object);
+	console.log('Setting Profile Pic');
+	$('.content').html(KeyValue);
+	},
+  error: function(error) {
+    alert("Error: " + error.code + " " + error.message);
+  }
+});
+}
+function deleteCookie(cookieName){
+document.cookie = cookieName +"=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+}
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString();
+    document.cookie = cname+"="+cvalue+"; "+expires;
+}
+
+function changeUser(){
+
+var ActUser = prompt("Please enter your Name:",""); 
+var mobile  = prompt("Please enter your mobile:","");
+var GameScores = Parse.Object.extend("InviteUser");
+	   var query = new Parse.Query(GameScores);
+		query.equalTo("iUser", ActUser.toLowerCase().trim());
+		query.equalTo("iMobile",mobile.trim());
+		query.find({
+					success: function(gameScore) {
+				// The object was retrieved successfully.
+				    console.log("Number of results:" + gameScore.length);	
+					if(gameScore.length > 0){
+					console.log("User Changed to:" + gameScore[0].get("iUser") + " Count: " + gameScore.length);
+					//alert('User with name: ' + user + ' already exists!!');
+					deleteCookie("iName");
+					deleteCookie("iMobile");
+					setCookie("iName", ActUser, 30);
+					setCookie("iMobile", mobile, 30);
+					document.getElementById('iName').value = ActUser.toLowerCase();
+					document.getElementById('iMobile').value = mobile.trim();
+					//$('.content').html(document.getElementById('iName').value );
+					$('.content').html(getProfilePic("InviteUser","iUser",document.getElementById('iName').value));
+					showNotification(document.getElementById('iName').value + ' has logged in');
+					getInboundUser(document.getElementById('iName').value.trim().toLowerCase());
+					history.go(0);
+					}
+					else{
+					alert(ActUser + " is not existing with Mobile " + mobile);
+					}
+					
+				},
+			  error: function(object, error) {
+				// The object was not retrieved successfully.
+				// Internet Connection Error . Please Check ur network.
+				alert(' Internet Connection Error . Please Check ur network.');
+				}
+			});
+
+}
+
+
+function enlarge(urls){
+$(".showImg").slideDown();
+$('.showImg').html('<span class="close">Close[X]</span><img class="imgattach" src="' + urls  + '"  width=70%></img>');
+$('.close').click(function(){
+$(".showImg").slideUp();
+$('.showImg').html('');
+});
+
+}
+
+function getPicURL(profile){
+var profilePhoto = profile.get("iPhoto");
+if(profilePhoto != undefined ){
+return profilePhoto.url();
+}
+else{
+return "";
+}
+}
+
+
+function getProfileURL(profile){
+var profilePhoto = profile.get("iPhoto");
+
+if(profilePhoto != undefined ){
+if(profilePhoto.url().toLowerCase().split(".").indexOf("jpg") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("png") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("jpeg") > -1){
+var imageDiv = '<a href="#" onclick="enlarge(this.firstChild.src)" ><img class="Profileimg" src="' + profilePhoto.url()  + '" height=5% width=10%></img></a>' + profile.get("iUser") ;
+console.log('attaching event to ' + profilePhoto.url());
+}
+else if(profilePhoto.url().toLowerCase().split(".").indexOf("mp4") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("flv") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("avi") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("mkv") > -1)
+{
+var imageDiv = '<video width="320" height="240" controls><source src="'+ profilePhoto.url() + '" type="video/mp4">Your browser does not support the video tag.</video>';
+}
+else if(profilePhoto.url().toLowerCase().split(".").indexOf("mp3") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("wav") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("amr") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("wma") > -1)
+{
+var imageDiv = '<video width="320" height="240" controls><source src="'+ profilePhoto.url() + '" type="video/mp4">Your browser does not support the video tag.</video>';
+}
+else{
+var imageDiv = '<a href="' + profilePhoto.url() + '">' + profilePhoto.url()  + '</a>' + profile.get("iUser") ;
+}
+return imageDiv;
+}
+else{
+return "";
+}
+//$("profileImg")[0].src = profilePhoto.url();
+}
+
+
+function getAttachment(profile){
+var profilePhoto = profile.get("iFile");
+if(profilePhoto != undefined ){
+if(profilePhoto.url().toLowerCase().split(".").indexOf("jpg") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("png") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("jpeg") > -1){
+var imageDiv = '<a href="#" onclick="enlarge(this.firstChild.src)" ><img class="imgattach" src="' + profilePhoto.url()  + '" height=20% width=20%></img></a>';
+console.log('attaching event to ' + profilePhoto.url());
+}
+else if(profilePhoto.url().toLowerCase().split(".").indexOf("mp3") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("mp4") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("flv") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("avi") > -1 || profilePhoto.url().toLowerCase().split(".").indexOf("mkv") > -1)
+{
+var imageDiv = '<video width="320" height="240" controls><source src="'+ profilePhoto.url() + '" type="video/mp4">Your browser does not support the video tag.</video>';
+}
+else{
+var imageDiv = '<a href="' + profilePhoto.url() + '">' + profilePhoto.url()  + '</a>' ;
+}
+return imageDiv;
+}
+
+else{
+return "";
+}
+//$("profileImg")[0].src = profilePhoto.url();
+}
+
+
+
+
+function saveFile()
+{
+var GameScore = Parse.Object.extend("Invite");
+var query = new Parse.Query(GameScore);
+query.equalTo("iUser", User);
+query.first({
+success: function(object) {
+	object.addUnique("iConnection", conTo);
+	object.save();
+	console.log("Added to iconnection log " + User + ":" + conTo);
+     },
+  error: function(error) {
+    alert("Error: " + error.code + " " + error.message);
+  }
+});
+
+}
+ function getInboundUser(User){
+ console.log('Searching connections for user:' + User);
+var GameScore = Parse.Object.extend("InviteUser");
+var query = new Parse.Query(GameScore);
+query.equalTo("iUser", User);
+query.first({
+success: function(object) {
+//console.log(object.get("iConnection").length);
+	
+	
+	if(object.get("iConnection") != undefined){
+	userArr = object.get("iConnection");
+	getLatestMessages(0);}
+     },
+  error: function(error) {
+   // alert("Error: " + error.code + " " + error.message);
+  }
+});
+ 
+ }
+function saveComment(){
+if($('.chatType').val().trim() == "")
+{
+return;
+}
+var Invited = Parse.Object.extend("Invite");
+var Invite = new Invited();
+Invite.set("iName", document.getElementById('iName').value.toLowerCase());
+Invite.set("iMobile", parseInt(document.getElementById('iMobile').value));
+Invite.set("iComment", $('.chatType').val());
+Invite.set("iDiscuss" , document.getElementById('iName').value.toLowerCase()  + ":" + otherParty.toLowerCase());
+Invite.save(null, {
+  success: function(gameScore) {
+    // Execute any logic that should take place after the object is saved.
+   console.log('Comment Posted: ' + gameScore.get('iComment'));
+   startThread(document.getElementById('iName').value,otherParty);
+   $('.chatType').val('');
+  },
+  error: function(gameScore, error) {
+    // Execute any logic that should take place if the save fails.
+    // error is a Parse.Error with an error code and message.
+    alert('Failed to create new object, with error code: ' + error.message);
+  }
+});
+}
+function Search(data)
+{
+
+var res = "";
+$('.chatType').val('');
+$('.searchResult').html('');
+$('.searchResult').html('<br><br><center><H1><img width="20%" src="loading_bar.gif"> </img>');
+//var GameScore = Parse.Object.extend("InviteUser");
+var iUser = new Parse.Query("InviteUser");
+iUser.startsWith("iUser", data.toLowerCase());
+
+var iMobile = new Parse.Query("InviteUser");
+iMobile.startsWith("iMobile", data);
+
+var mainQuery = Parse.Query.or(iUser, iMobile);
+mainQuery.limit(10);
+mainQuery.find({
+  success: function(results) {
+     // results contains a list of iUser based on the name or mobile number
+	 console.log('Search Results');
+	 for (var i = 0; i < results.length; i++) {
+      var object = results[i];
+      console.log(i + '. ' + object.get('iUser'));
+	  res = res + '<div class="result">' + object.get('iUser') + '</div>';
+    }
+	if(results.length == 0){
+	$('.searchResult').html('<br><br><center><H1>No Results!!</H1>');
+	}else{
+	$('.searchResult').html('');
+	appendResut('searchResult','resultUser',res);}
+    //$('.searchResult').html(res);
+  },
+  error: function(error) {
+    // There was an error.
+	alert('Connection Error : Please check your network connection');
+  }
+});
+
+}
+
+function appendResut(parentdivName,divName,data){
+parentdivName = "."  + parentdivName;
+var s = "";
+if(divName == "result"){
+s = $(parentdivName).html() +  '<div class="' + divName + '">' + data + '<div>';
+}
+else{
+s = $(parentdivName).html() +  '<br><div class="' + divName + '">' + data + '<div>';
+}
+$(parentdivName).html(s);
+
+$('.result').click(function(){
+console.log('***********New thread started from appendResut*************');
+otherParty = $(this).text();
+console.log('Other Party appendResut:' + otherParty);
+$('.LastMsg').html('');
+$('.searchResult').html('');
+$('.Search').val('');
+$('.content').html(getProfilePic("InviteUser","iUser",document.getElementById('iName').value) + ' <=> ' + getProfilePic("InviteUser","iUser",otherParty));
+$(".log").show();
+$('.chatArea').html('');
+calledCtr = 0;
+prevComLength = 0;
+//saveConnections(document.getElementById('iName').value.trim() , otherParty);
+saveConnections( otherParty, document.getElementById('iName').value.trim());
+startThread(document.getElementById('iName').value,otherParty);
+
+});
+
+$('.msgs').click(function(){
+console.log('***********New thread started from appendResut*************');
+otherParty = $(this).text().split(":")[0];
+console.log('Other Party appendResut:' + otherParty);
+$('.LastMsg').html('');
+$('.searchResult').html('');
+$('.Search').val('');
+$('.content').html(getProfilePic("InviteUser","iUser",document.getElementById('iName').value) + ' <=> ' + getProfilePic("InviteUser","iUser",otherParty));
+$(".log").show();
+$('.chatArea').html('');
+calledCtr = 0;
+prevComLength = 0;
+//saveConnections(document.getElementById('iName').value.trim() , otherParty);
+saveConnections( otherParty, document.getElementById('iName').value.trim());
+startThread(document.getElementById('iName').value,otherParty);
+
+});
+
+}
+
+function logIn(){
+var joinInvite = Parse.Object.extend("InviteUser");
+var joinInvited = new joinInvite();
+joinInvited.set("iUser", document.getElementById('iName').value.toLowerCase().trim());
+joinInvited.set("iMobile", document.getElementById('iMobile').value.trim());
+joinInvited.save(null, {
+  success: function(gameScore) {
+    // Execute any logic that should take place after the object is saved.
+    alert('New User created with UserId: ' + gameScore.get("iUser"));
+	history.go(0);
+  },
+  error: function(gameScore, error) {
+    // Execute any logic that should take place if the save fails.
+    // error is a Parse.Error with an error code and message.
+    alert('Failed to create new User, with error code: ' + error.message);
+  }
+});
+}
+var calledCtr = 0;
+var prevComLength = 0;
+
+function autoScroll()
+{
+var elem = document.getElementById('chatScroll');
+  elem.scrollTop = elem.scrollHeight;
+}
+var SkipCtr = 0;
+function getCreatedAtStart(){
+var d = new Date();
+var month = new Array();
+month[0] = "Jan";
+month[1] = "Feb";
+month[2] = "Mar";
+month[3] = "Apr";
+month[4] = "May";
+month[5] = "Jun";
+month[6] = "Jul";
+month[7] = "Aug";
+month[8] = "Sep";
+month[9] = "Oct";
+month[10] = "Nov";
+month[11] = "Dec";
+var n = month[d.getMonth()] + " " + d.getDate();
+console.log("CurrentDate:" + n);
+return n;
+}
+
+var arrObjId = [];
+
+function startThread(Mee,You)
+{
+
+Mee = Mee.trim();
+You = You.trim();
+calledCtr++;
+if(prevComLength == 0 && calledCtr == 1){
+$('.searchResult').html('<br><br><center><H1><img width="20%" src="loading_bar.gif"> </img>');}
+if(calledCtr == 1){
+$('.chatArea').html('');
+}
+//console.log('Initiating chat session between : ' + Mee + ' and ' + You);
+var Invites = Parse.Object.extend("Invite");
+//var query = new Parse.Query(Invites);
+// Retrieve the most recent ones
+// query.ascending("createdAt");
+// Only retrieve the last ten
+//query.limit(10);
+var iUser = new Parse.Query("Invite");
+//iUser.startsWith("createdAt",getCreatedAtStart());
+iUser.startsWith("iDiscuss", Mee.toLowerCase() + ":" + You.toLowerCase());
+
+var iMobile = new Parse.Query("Invite");
+//iMobile.startsWith("createdAt",getCreatedAtStart());
+iMobile.startsWith("iDiscuss", You.toLowerCase() + ":" +  Mee.toLowerCase());
+//console.log('Looking for discussions for =' +  Mee.toLowerCase() + ":" + You.toLowerCase() + '<=>' + You.toLowerCase() + ":" +  Mee.toLowerCase() + "=");
+var mainQuery = Parse.Query.or(iUser, iMobile);
+//if(calledCtr > 1){
+//
+//}
+//mainQuery.mainQuery.limit(1);
+//mainQuery.descending("createdAt");
+mainQuery.ascending("createdAt");
+
+mainQuery.find({
+  success: function(comments) {
+    // Comments now contains the last ten comments, and the "post" field
+    // has been populated. For example:
+	if(prevComLength == 0 && calledCtr == 1){
+$('.searchResult').html('');
+}
+	//console.log( prevComLength + ' != ' +  comments.length)
+	if(prevComLength != comments.length){
+	
+    for (var i = prevComLength; i < comments.length; i++) {
+      // This does not require a network access.
+     // var post = comments[i].get("iComment");
+	  var MeOrYou = comments[i].get("iName");
+	  arrObjId.push(comments[i].id);
+	  if(MeOrYou == Mee.toLowerCase()){
+	 // console.log('MeOrYou == Mee.toLowerCase()');
+	  if(getAttachment(comments[i]) != "")
+		{
+			appendResut('chatArea','chatpopV', createImgCont('self') + MeOrYou +  ": <font color='cadetblue'>" + (comments[i].createdAt).toString().substring(15, 24) + "</font><br>" + comments[i].get("iComment") + getAttachment(comments[i]));
+		}
+		else{
+			appendResut('chatArea','chatpop', createImgCont('self') + MeOrYou + ": <font color='#FFF'>" + (comments[i].createdAt).toString().substring(15, 24) + "</font><br>" + comments[i].get("iComment") + getAttachment(comments[i]));
+		}
+	   
+	   setProfilePicsinChat("InviteUser","iUser",MeOrYou,'self');
+	  }
+	  else{
+	 // console.log('else of MeOrYou == Mee.toLowerCase()');
+	 // appendResut('chatArea','chatpopR', MeOrYou  + ": " + (comments[i].createdAt).toString().substring(0, 24) + "<br>" + comments[i].get("iComment") + getAttachment(comments[i]));
+	  if(getAttachment(comments[i]) != "")
+		{
+			appendResut('chatArea','chatpopRV',createImgCont('othr')  + MeOrYou +  ": <font color='#FFF'>" + (comments[i].createdAt).toString().substring(15, 24) + "</font><br>" + comments[i].get("iComment") + getAttachment(comments[i]));
+		}
+		else{
+			appendResut('chatArea','chatpopR',createImgCont('othr')  + MeOrYou +  ": <font color='#cadetblue'>" + (comments[i].createdAt).toString().substring(15, 24) + "</font><br>" + comments[i].get("iComment") + getAttachment(comments[i]));
+		}
+	  setProfilePicsinChat("InviteUser","iUser",MeOrYou,'othr');
+	  }
+	  playSound('Chat_recieve.wav');
+	  
+    }
+	}
+	else{
+	
+	//console.log(prevComLength + '==' + comments.length);
+	if(prevComLength == 100){
+	console.log("Message limit reached 100 . Hence archiving old messages");
+	archiveOldMessage(arrObjId);
+	arrObjId = [];
+	$('.chatArea').html('<b>Archived Old Messages!!</b>');
+	}
+	
+	//prevComLength = 80;
+	}
+	if(comments.length == 0 && calledCtr == 1){
+	console.log('No Previous conversation : Welcome Please start the conversation');
+	appendResut('chatArea','chatpopR','Welcome Please start the conversation');
+	playSound('Chat_recieve.wav');
+	}
+	prevComLength = comments.length;
+	autoScroll();
+	
+	setTimeout(function(){ startThread(Mee,otherParty); }, 3000);
+  }
+});
+}
+
+function archiveOldMessage(arrObjId){
+var GameScore = Parse.Object.extend("Invite");
+var query = new Parse.Query(GameScore);
+//query.equalTo(Key, KeyValue.toLowerCase());
+console.log(arrObjId);
+query.containedIn("objectId", arrObjId);
+query.find({
+success: function(object) {
+console.log("Archving " + object.length + " messages");
+  for (var i = 0; i < object.length; i++) {
+      var obj = object[i];
+	obj.set("iDiscuss", "Old:" + obj.get('iDiscuss'));
+	obj.save();
+	console.log("Updated iDiscuss=" +  obj.get('iDiscuss'));
+      //alert(obj.id + ' - ' + object.get('playerName'));
+    }
+	
+	},
+  error: function(error) {
+    alert("Error: " + error.code + " " + error.message);
+  }
+});
+
+}
+function getTimeStamp(){
+var d = new Date();
+return d.toUTCString();
+}
+ function playSound(soundfile) {
+ document.getElementById("dummy").innerHTML= "<embed src=\"" + soundfile + "\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+ }
+ function saveConnections(User , conTo){
+ var conTo = conTo.trim().toLowerCase();
+ var User  = User.toLowerCase().trim();
+ console.log("Saving connection log =" + User + ":" + conTo + "=");
+ var GameScore = Parse.Object.extend("InviteUser");
+var query = new Parse.Query(GameScore);
+query.equalTo("iUser", User);
+query.first({
+success: function(object) {
+	object.addUnique("iConnection", conTo);
+	object.save();
+	console.log("Added to iconnection log " + User + ":" + conTo);
+     },
+  error: function(error) {
+   // alert("Error: " + error.code + " " + error.message);
+  }
+});
+
+ }
+ 
+
+
+ function getLatestMessages(countfrom){
+  
+  if(countfrom < userArr.length){
+  console.log('Fetching last message from ' + userArr[countfrom]);
+  var GameScore = Parse.Object.extend("Invite");
+  var query = new Parse.Query(GameScore);
+  query.equalTo("iDiscuss",userArr[countfrom].toLowerCase() + ":" + document.getElementById('iName').value.toLowerCase())
+  query.descending("createdAt");
+  query.first({
+  success: function(object) {
+    if(object != undefined){
+	appendResut('LastMsg','msgs',object.get("iName") + ":" + object.get("iComment"));
+	console.log(object.get("iComment"));
+	}
+	//return object.get("iComment");
+	countfrom++;
+	getLatestMessages(countfrom);
+	
+     },
+  error: function(error) {
+    //alert("Error: " + error.code + " " + error.message);
+  }
+});
+}
+ }
+ var lastNotification = "";
+ function showLast()
+ {
+ var user = ":" + document.getElementById('iName').value.toLowerCase() + '$';
+  var GameScore = Parse.Object.extend("Invite");
+  var query = new Parse.Query(GameScore);
+		query.matches("iDiscuss", user);
+		query.notEqualTo("iDiscuss",otherParty + ":" + document.getElementById('iName').value.toLowerCase());
+	    //query.descending("iDiscuss");
+		query.descending("createdAt");
+		query.first({
+					success: function(gameScore) {
+					// The object was retrieved successfully.
+					console.log("Last Messages from " + gameScore.get("iName") +  ": " +  gameScore.get("iComment"));
+					if(lastNotification != gameScore.get("iComment")){
+					showNotification(gameScore.get("iName") + " : " + gameScore.get("iComment"));
+					$(document).prop('title', 'Wisp-' + gameScore.get("iName") + " : " + gameScore.get("iComment"));
+					playSound('Chat_recieve.wav');
+					}
+					lastNotification = gameScore.get("iComment");
+				    setTimeout(function(){showLast();} , 190000);
+					
+				},
+			  error: function(object, error) {
+				// The object was not retrieved successfully.
+				// Internet Connection Error . Please Check ur network.
+				alert(' Internet Connection Error . Please Check ur network.');
+				}
+			});
+ 
+ }
+ 
+ 
+ 
+</script>
+<style>
+h1, h2, h3, h4, h5, h6, .w3-slim, .w3-wide {
+    font-family: "Segoe UI",Arial,sans-serif;
+}
+.chatWidget{
+    width:100%;
+ }
+.chatArea{
+padding: 5px;
+    font-family: monospace;
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: width 0.4s ease-in-out;
+    width: auto;
+  }
+.chatpop{
+ width: 50%;
+ font-weight:bolder;
+    display: inline-block;
+    overflow-wrap: break-word;
+    padding: 3px;
+-webkit-border-radius: 20px 29px 20px 20px;
+-moz-border-radius: 20px 29px 20px 20px;
+border-radius: 20px 29px 20px 20px;
+    background-color: #B6D8EC;
+-webkit-box-shadow: #B3B3B3 9px 9px 9px;
+-moz-box-shadow: #B3B3B3 9px 9px 9px;
+ box-shadow: #B3B3B3 9px 9px 9px;
+}
+
+.chatpopV{
+ width: 50%;
+    display: inline-block;
+    overflow-wrap: break-word;
+    padding: 3px;
+-webkit-border-radius: 20px 29px 20px 20px;
+-moz-border-radius: 20px 29px 20px 20px;
+border-radius: 20px 29px 20px 20px;
+     background-color: #CCC;
+-webkit-box-shadow: #B3B3B3 9px 9px 9px;
+-moz-box-shadow: #B3B3B3 9px 9px 9px;
+ box-shadow: #B3B3B3 9px 9px 9px;
+}
+
+.chatpopR{
+    position: relative;
+    width: 50%;
+    display: inline-block;
+    overflow-wrap: break-word;
+    padding: 3px;
+        right: -46%;
+    -webkit-border-radius: 20px 29px 20px 20px;
+    -moz-border-radius: 20px 29px 20px 20px;
+    border-radius: 20px 29px 20px 20px;
+    background-color:  #fff;
+    -webkit-box-shadow: #B3B3B3 9px 9px 9px;
+    -moz-box-shadow: #B3B3B3 9px 9px 9px;
+    box-shadow: #B3B3B3 9px 9px 9px;
+	font-weight:bolder;
+}
+
+.chatpopRV{
+    position: relative;
+    width: 50%;
+    display: inline-block;
+    overflow-wrap: break-word;
+    padding: 3px;
+        right: -46%;
+		 background-color: #CCC;
+    -webkit-border-radius: 20px 29px 20px 20px;
+    -moz-border-radius: 20px 29px 20px 20px;
+    border-radius: 20px 29px 20px 20px;
+     -webkit-box-shadow: #B3B3B3 9px 9px 9px;
+    -moz-box-shadow: #B3B3B3 9px 9px 9px;
+    box-shadow: #B3B3B3 9px 9px 9px;
+}
+
+.Search {
+z-index:1;
+position:fixed;
+top: 6%;
+    _left: 16%;
+    width: 95%;
+    text-align: center;
+	box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: white;
+    background-image: url('http://www.w3schools.com/css/searchicon.png');
+    background-position: 10px 10px; 
+    background-repeat: no-repeat;
+    padding: 12px 20px 12px 40px;
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: width 0.4s ease-in-out;
+}
+
+tbody
+{
+  background-color: ghostwhite;
+}
+.overview{
+	    position: fixed;
+    top: 11%;
+    _left: 37%;
+    height: 60%;
+    width: 100%;
+    overflow: auto;
+}
+.searchOpt{
+position:fixed;
+overflow-y:scroll;
+}
+.chatType{
+    position: fixed;
+	left: 1%;
+ height: 60px;
+    bottom: 11%;
+    width: 80%;
+    height: 17%;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    /* padding-right: 7%; */
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: width 0.4s ease-in-out;
+   
+ }
+.button {
+    position: fixed;
+    bottom: 1%;
+    background-color: #AEB3AE;
+    border: none;
+    font-size: 28px;
+    color: #FFFFFF;
+    width: 95%;
+    text-align: center;
+    text-decoration: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+.searchResult{
+position: absolute;
+z-index:2;
+    top: 13%;
+     width: 100%;
+    }
+.result:nth-child(odd){
+position: relative;
+    width: 97%;
+    padding: 2%;
+    text-align: -webkit-center;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #EFFFF4;
+
+}
+.result:nth-child(even){
+position: relative;
+    width: 97%;
+    padding: 2%;
+    text-align: -webkit-center;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #FFFEEF;
+}
+.result:hover{
+ background-color: #FFF;
+ border: 3px solid #ccc;
+}
+body{
+    background-repeat: no-repeat;
+    background-color: #F4F7EC;
+	font-family: "proxima-nova",Arial,Helvetica,sans-serif;
+	color:#000;
+	
+}
+.LastMsg{
+       position: fixed;
+    top: 14%;
+    left: 4%;
+    opacity: 0.8;
+    overflow: scroll;
+  width: 91%;
+    height:70%;
+
+    }
+.msgs{
+    position: relative;
+    padding: 1%;
+    _border: 2px solid #ccc;
+    border-radius: 20px;
+    background: azure;
+	text-align:center;
+	cursor:pointer;
+}
+.msgs:hover{
+
+background: #000000;
+color:#fff;
+ font-weight: bolder;
+}
+.hdr {
+    text-align: center;
+    background: #000000;
+    color: #fff;
+    font-weight: bolder;
+    padding: 1%;
+    position: fixed;
+    left: 43%;
+    border-radius: 6%;
+    border-color: white;
+}
+.title{
+    font-weight: bolder;
+    background-color: cornsilk;
+    /* padding-left: 29%; */
+    text-align: center;
+    left: 43%;
+    position: fixed;
+}
+#profilePhotoFileUpload{
+   visibility: hidden;
+}
+#profilePicFileUpload{
+   visibility: hidden;
+}
+
+.material-icons{
+    position: fixed;
+    top: 71%;
+    left: 84%;
+    cursor: pointer;
+    padding: 4%;
+    background-color: darkgray;
+    border-radius: 52%;
+}
+
+   .progress-button {
+ line-height: 2; 
+   
+    
+}
+
+
+.showImg{
+position:fixed;
+left:0%
+top:0%;
+width:100%;
+height:100%;
+z-index:4;
+background-color:#000;
+}
+
+.close{
+position:absolute;
+top:0%;
+right:1px;
+font-weight:bolder;
+padding:1%;
+background-color:#fff;
+cursor:pointer;
+}
+
+a {
+    color: rgb(232, 129, 66);
+	vlink:blue;
+	
+}
+.ChangeUser{
+cursor: pointer;
+    _background-color: black;
+    border-radius: 7px;
+    padding: 7px;
+    opacity: .8;
+}
+.UploadPic{
+cursor: pointer;
+    _background-color: black;
+    border-radius: 7px;
+    padding: 7px;
+    opacity: .8;
+
+}
+
+.self , .othr{
+border:none;
+width:5%;
+border-radius: 15px;
+height:5%;
+}
+.content{
+width:10%;
+height:10%;
+}
+</style>
+<body>
+<div class='showImg'></div><span class='ChangeUser'><a href="javascript:changeUser()"><img src='changeUser.ico' title='Change User' width='2%' height='auto'></img></a></span> <span class='UploadPic'><a href="javascript:UploadPic()"><img src='Profile.ico' title='Change Profile Photo' width='2%' height='auto'></img></a></span><span class='ChangeUser'><a href="javascript:history.go(0)"><img src='Refresh.ico' title='Change User' width='2%' height='auto'></img></a></span>
+<span class='title'> Wisp - Just Connect </span>
+
+<div class='registeration'>
+   <input type='hidden' id='iName'   value=''/>
+ <input type='hidden' id='iMobile' value=''/>
+<input type='hidden' id='iSave' value ='Register' onclick="logIn()"/>
+</div>
+<span class='LastMsg'>
+<div class='hdr'>Last Messages</div><br>
+
+</span>
+<input type="text" class='Search' name="search" onkeyup='Search(this.value)' align="center" placeholder="Name or Mobile.."><div class='searchResult'></div>
+<div class='log'>
+     
+	     <div class='overview' id='chatScroll'>
+			<div class='chatArea'></div>
+		</div>
+		<textarea type='text' class='chatType' ></textarea> <input type="file" id="profilePhotoFileUpload" ><i class="material-icons">attachment</i>
+		<br>
+		<input type='button' class="button" value='Send' onclick='saveComment()'>
+</div>
+<span id='dummy'></span><input type="file" id="profilePicFileUpload" >
+</body>
+</html><!-- www.serversfree.com Analytics Code -->
+<script src="http://www.serversfree.com"></script><noscript><a title="Free hosting servers" href="http://www.serversfree.com">Free servers</a><a title="Free websites hosting server" href="http://www.serversfree.com">Free websites hosting server</a><a title="Free hosting server features" href="http://www.serversfree.com/server-features/">Free server features</a><a title="Free hosting" href="http://www.bugs3.com">Free hosting</a><a title="Page rank" href="http://www.1pagerank.com">Page rank</a></noscript>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-24425628-3']);
+  _gaq.push(['_setDomainName', window.location.host]);
+  _gaq.push(['_setAllowLinker', true]);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<script type="text/javascript" src="http://www.bugs3.com/ganalytics.js"></script>
+<!-- End Of Analytics Code -->
