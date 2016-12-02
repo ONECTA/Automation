@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 public class GetPayBackDetails {
@@ -26,7 +27,12 @@ gpb.sendGet();
         // This will reference one line at a time
         String line = null;
         String response = "";
-
+        String MobileNo = "";
+        String[] s = null;
+        String[] m = null;
+        int MobCtr = -1;
+        int DataCtr = 0;
+        Map<Integer,Integer> MobData = new HashMap<Integer,Integer>();
         try {
             // FileReader reads text files in the default encoding.
             FileReader fileReader = 
@@ -40,13 +46,24 @@ gpb.sendGet();
               //  System.out.println(line);
                 if(line.contains("<strData>") && line.contains("</strData>") && line.contains("|")){
                 	response = response + "end" + line.split("strData")[1].trim()  + "end" ;
+                	MobData.put(DataCtr,MobCtr);
+                //	System.out.println("All  "+ DataCtr+ ","+MobCtr);
+                	DataCtr++;
                 }
                 else if(line.contains("<strData>")  && line.contains("|")){
                 	response = response +  "end" + line.split("<strData>")[1].trim();
+        	     	MobData.put(DataCtr,MobCtr);
+             //   	System.out.println("Break "+ DataCtr+ ","+MobCtr);
+                	DataCtr++;
                 }
                 else if(line.contains("</strData>") && line.contains("|")){
                 	response = response + line.split("</strData>")[0].trim() +  "end" ;
                 }
+                else if(line.contains("Mobile:")){
+                	MobileNo = MobileNo  + line.split(":")[1] + ":";
+                	MobCtr++;
+                }
+                
             }   
 
             // Always close files.
@@ -69,13 +86,22 @@ gpb.sendGet();
 		//Generate the response and extract the status
 	    if(response.contains("|")){
 	   // System.out.println("Ok response");
-	    response =  response.replaceAll("endend", "end").replaceAll("end", "\r\n").replaceAll("[></]", "").replaceAll("[|]",",");
-	    System.out.println(response);
-	    ResponseWriter(response);
+	    s = response.replaceAll("endend", "end").replaceAll("[></]", "").replaceAll("[|]",",").split("end");
+	    response =  response.replaceAll("endend", "end").replaceAll("[></]", "").replaceAll("[|]",",").replaceAll("end", "\r\n");
+	   // System.out.println(response);
+	    //ResponseWriter(response);
+	    m = MobileNo.split(":");
 	    }
 	    else{
 		System.out.println("No data found");
 	    }
+	    //System.out.println(MobData.get(0));
+	    for(int x =0;x<=s.length-2;x++){
+	    
+	    System.out.println(m[MobData.get(x)] + s[x+1] );
+	    ResponseWriter(m[MobData.get(x)] + s[x+1] + "\r\n");
+	    }
+	    
         
         }
 	public void ResponseWriter(String content){
@@ -88,7 +114,7 @@ gpb.sendGet();
 				file.createNewFile();
 			}
 
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(content);
 			bw.close();
