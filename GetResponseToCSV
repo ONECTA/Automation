@@ -99,7 +99,7 @@ gpb.sendGet();
 	    for(int x =0;x<=s.length-2;x++){
 	    
 	    System.out.println(m[MobData.get(x)] + s[x+1] );
-	    ResponseWriter(m[MobData.get(x)] + s[x+1] + "\r\n");
+	    ResponseWriter(m[MobData.get(x)] + s[x+1].replaceAll("\\w+\\=","") + "\r\n");
 	    }
 	    
         
